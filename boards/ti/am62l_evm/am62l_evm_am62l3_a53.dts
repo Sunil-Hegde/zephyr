@@ -19,6 +19,10 @@
 		zephyr,sram = &ddr0;
 	};
 
+	aliases {
+		watchdog0 = &main_rti0;
+	};
+
 	cpus {
 		cpu@0 {
 			status = "okay";
@@ -39,5 +43,9 @@
 	pinctrl-0 = <&uart0_rx_default>,
 		    <&uart0_tx_default>;
 	pinctrl-names = "default";
+	status = "okay";
+};
+
+&main_rti0 {
 	status = "okay";
 };
