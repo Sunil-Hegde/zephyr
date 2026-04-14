@@ -52,6 +52,7 @@ static unsigned char ipc_virtio_get_status(struct virtio_device *dev)
 static void ipc_virtio_set_status(struct virtio_device *dev, unsigned char status)
 {
 	sys_write8(status, VDEV_STATUS_ADDR);
+	sys_cache_data_flush_range((void *)VDEV_STATUS_ADDR, sizeof(status));
 }
 
 static uint32_t ipc_virtio_get_features(struct virtio_device *dev)
@@ -216,6 +217,7 @@ void app_task(void *arg1, void *arg2, void *arg3)
 		return;
 	}
 
+	sys_cache_data_invd_range((void *)SHM_START_ADDR, SHM_SIZE);
 	/* Since we are using name service, we need to wait for a response
 	 * from NS setup and then we need to process it
 	 */

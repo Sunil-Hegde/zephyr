@@ -18,6 +18,7 @@
 		zephyr,shell-uart = &main_uart0;
 		zephyr,sram = &a53_ddr_section;
 		zephyr,ipc = &ipc0;
+		zephyr,ipc_shm = &ipc_shm0;
 	};
 
 	aliases {
@@ -70,6 +71,12 @@
 		ld1: led_0 {
 			gpios = <&main_gpio1 49 GPIO_ACTIVE_HIGH>;
 		};
+	};
+
+	ipc_shm0: memory@9cb00000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x9cb00000 DT_SIZE_M(1)>;
+		zephyr,memory-region = "IPC_SHM";
 	};
 
 	/* A53 -> M4F */
