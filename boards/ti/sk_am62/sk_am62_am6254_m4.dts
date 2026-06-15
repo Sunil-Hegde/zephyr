@@ -7,7 +7,6 @@
 /dts-v1/;
 
 #include <ti/am62x_m4.dtsi>
-
 / {
 	model = "TI AM62X STARTER KIT (SK) EVALUATION MODULE (EVM)";
 	compatible = "ti,am62x_m4_sk";
@@ -28,9 +27,10 @@
 		};
 	};
 
-	ddr0: memory@9cb00000 {
+	/* OpenAMP shared memory with R5F host */
+	ddr0: memory@9cd00000 {
 		compatible = "mmio-sram";
-		reg = <0x9cb00000 DT_SIZE_M(1)>;
+		reg = <0x9cd00000 DT_SIZE_M(1)>;
 	};
 
 	rsc_table: memory@9cc00000 {
@@ -45,9 +45,11 @@
 		zephyr,memory-region = "DDR";
 	};
 
+
+	/* M4F -> R5F: FIFO4 (userId=1), R5F -> M4F: FIFO5 (userId=2) */
 	ipc0: ipc {
 		compatible = "zephyr,mbox-ipm";
-		mboxes = <&mbox0 0>, <&mbox0 1>;
+		mboxes = <&mbox0 4>, <&mbox0 5>;
 		mbox-names = "tx", "rx";
 	};
 };

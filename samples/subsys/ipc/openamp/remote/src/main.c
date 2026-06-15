@@ -61,7 +61,7 @@ static void ipc_virtio_notify(struct virtqueue *vq)
 
 	ipm_send(ipm_handle, 0, current_core ? 0 : 1, 0, 1);
 #else
-	uint32_t dummy_data = 0x00110011; /* Some data must be provided */
+	uint32_t dummy_data = 0x00000001U; /* Some data must be provided */
 
 	ipm_send(ipm_handle, 0, 0, &dummy_data, sizeof(dummy_data));
 #endif /* #if defined(CONFIG_SOC_AN521) */

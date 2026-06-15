@@ -17,6 +17,9 @@ static const struct arm_mmu_region mmu_regions[] = {
 	MMU_REGION_FLAT_ENTRY("GIC", DT_REG_ADDR_BY_IDX(DT_NODELABEL(gic), 1),
 			      DT_REG_SIZE_BY_IDX(DT_NODELABEL(gic), 1),
 			      MT_DEVICE_nGnRnE | MT_P_RW_U_NA | MT_NS),
+
+	MMU_REGION_FLAT_ENTRY("OPENAMP_SHM", 0x9CB00000, 0x100000,
+				  MT_NORMAL_NC | MT_P_RW_U_NA | MT_NS),
 };
 
 const struct arm_mmu_config mmu_config = {
