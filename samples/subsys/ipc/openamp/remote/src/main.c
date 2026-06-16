@@ -28,6 +28,8 @@ static const struct device *const ipm_handle =
 static metal_phys_addr_t shm_physmap[] = { SHM_START_ADDR };
 
 static volatile unsigned int received_data;
+static volatile size_t received_len;
+static volatile uint8_t received_buf[MAX_MSG_SIZE];
 
 static struct virtio_vring_info rvrings[2] = {
 	[0] = {
@@ -85,7 +87,10 @@ static void platform_ipm_callback(const struct device *dev, void *context,
 int endpoint_cb(struct rpmsg_endpoint *ept, void *data,
 		size_t len, uint32_t src, void *priv)
 {
-	received_data = *((unsigned int *) data);
+	received_len = len;
+	if (len <= MAX_MSG_SIZE) {
+		memcpy((void *)received_buf, data, len);
+	}
 
 	k_sem_give(&data_rx_sem);
 
@@ -115,9 +120,10 @@ static unsigned int receive_message(void)
 	return received_data;
 }
 
-static int send_message(unsigned int message)
+static int send_message(void)
 {
-	return rpmsg_send(ep, &message, sizeof(message));
+	/* Echo back the received buffer with the same length */
+	return rpmsg_send(ep, (void *)received_buf, received_len);
 }
 
 void app_task(void *arg1, void *arg2, void *arg3)
@@ -203,15 +209,15 @@ void app_task(void *arg1, void *arg2, void *arg3)
 
 	while (message < 1000) {
 		message = receive_message();
-		//printk("Remote core received a message: %d\n", message);
 
-		message++;
-		status = send_message(message);
+		/* Echo back the received message with the same size */
+		status = send_message();
 		if (status < 0) {
-			printk("send_message(%d) failed with status %d\n",
-			       message, status);
+			printk("send_message failed with status %d\n", status);
 			goto _cleanup;
 		}
+
+		message++;
 	}
 
 _cleanup:

@@ -24,5 +24,7 @@
 #define VRING_ALIGNMENT		4
 #define VRING_SIZE		16
 
+/* Maximum message size for performance testing */
+#define MAX_MSG_SIZE            512
 
 #endif
