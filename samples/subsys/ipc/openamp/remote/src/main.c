@@ -131,7 +131,7 @@ void app_task(void *arg1, void *arg2, void *arg3)
 	struct rpmsg_device *rdev;
 	struct metal_init_params metal_params = METAL_INIT_DEFAULTS;
 
-	printk("\r\nOpenAMP[remote] demo started\r\n");
+	//printk("\r\nOpenAMP[remote] demo started\r\n");
 
 	status = metal_init(&metal_params);
 	if (status != 0) {
@@ -201,9 +201,9 @@ void app_task(void *arg1, void *arg2, void *arg3)
 		return;
 	}
 
-	while (message < 99) {
+	while (message < 1000) {
 		message = receive_message();
-		printk("Remote core received a message: %d\n", message);
+		//printk("Remote core received a message: %d\n", message);
 
 		message++;
 		status = send_message(message);
