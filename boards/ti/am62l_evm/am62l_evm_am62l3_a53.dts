@@ -21,6 +21,7 @@
 
 	aliases {
 		led0 = &ld9;
+		rtc = &counter_rtc0;
 	};
 
 	leds: leds {
@@ -87,4 +88,12 @@
 		#gpio-cells = <2>;
 		ngpios = <24>;
 	};
+};
+
+&wkup_rtc0 {
+	status = "okay";
+};
+
+&counter_rtc0 {
+	status = "okay";
 };
