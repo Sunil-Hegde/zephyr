@@ -236,3 +236,8 @@
 &uart3 {
 	zephyr,disabling-power-states = <&stop0 &stop1 &stop2 &stdby0 &stdby1>;
 };
+
+&flashctl {
+	ti,num-banks = <2>;
+	ti,no-weprota;
+};
