@@ -27,10 +27,12 @@ LOG_MODULE_REGISTER(flash_ti_mspm0, CONFIG_FLASH_LOG_LEVEL);
 #define FLASHCTL_CMDCTL		0x1108
 #define FLASHCTL_CMDADDR	0x1120
 #define FLASHCTL_CMDBYTEN	0x1124
+#define FLASHCTL_CMDDATAINDEX	0x112C
 #define FLASHCTL_CMDDATA(n)	(0x1130 + (n) * sizeof(uint32_t))
 #define FLASHCTL_CMDWEPROTA	0x11D0
 #define FLASHCTL_CMDWEPROTB	0x11D4
 #define FLASHCTL_STATCMD	0x13D0
+#define FLASHCTL_GBLINFO2	0x13F8
 
 #define FLASHCTL_ICLR_DONE		BIT(0)
 #define FLASHCTL_CMDEXEC_VAL		BIT(0)
@@ -93,6 +95,7 @@ struct flash_ti_mspm0_config {
 
 struct flash_ti_mspm0_data {
 	struct k_mutex lock;
+	uint32_t num_data_regs;
 };
 
 static inline bool flash_ti_mspm0_valid_range(off_t offset, size_t len)
@@ -207,6 +210,7 @@ static int flash_ti_mspm0_program_word(const struct device *dev,
 				       off_t offset, const uint8_t *src)
 {
 	const struct flash_ti_mspm0_config *cfg = dev->config;
+	struct flash_ti_mspm0_data *data = dev->data;
 
 	flash_ti_mspm0_clear_status(dev);
 	flash_ti_mspm0_unprotect(dev, offset);
@@ -216,6 +220,9 @@ static int flash_ti_mspm0_program_word(const struct device *dev,
 		    cfg->base + FLASHCTL_CMDTYPE);
 	sys_write32(MSPM0_FLASH_BASE + offset, cfg->base + FLASHCTL_CMDADDR);
 	sys_write32(FLASHCTL_CMDBYTEN_WORD, cfg->base + FLASHCTL_CMDBYTEN);
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+	sys_write32((offset / MSPM0_WORD_SIZE) % data->num_data_regs, cfg->base + FLASHCTL_CMDDATAINDEX);
+#endif
 
 	for (size_t i = 0; i < MSPM0_WORD_SIZE / sizeof(uint32_t); i++) {
 		sys_write32(sys_get_le32(&src[i * sizeof(uint32_t)]),
@@ -383,6 +390,8 @@ static int flash_ti_mspm0_init(const struct device *dev)
 	/* Completion is polled, keep the DONE interrupt masked and cleared */
 	sys_write32(0, cfg->base + FLASHCTL_IMASK);
 	sys_write32(FLASHCTL_ICLR_DONE, cfg->base + FLASHCTL_ICLR);
+
+	data->num_data_regs = sys_read32(cfg->base + FLASHCTL_GBLINFO2);
 
 	return 0;
 }
