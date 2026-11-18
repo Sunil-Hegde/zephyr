@@ -139,13 +139,15 @@
 		};
 
 		flash_controller: flash-controller@40042000 {
+			compatible = "ti,mspm0-flash-controller";
 			reg = <0x40042000 DT_SIZE_K(8)>;
 			interrupts = <2 0>;
 			ranges;
 			#address-cells = <1>;
 			#size-cells = <1>;
+			ti,num-banks = <2>;
 
-			flash0: flash@10000000 {
+			flash0: flash@0 {
 				compatible = "soc-nv-flash";
 				erase-block-size = <DT_SIZE_K(2)>;
 				write-block-size = <16>;
