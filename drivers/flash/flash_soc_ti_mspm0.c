@@ -60,6 +60,16 @@ LOG_MODULE_REGISTER(flash_ti_mspm0, CONFIG_FLASH_LOG_LEVEL);
 #define FLASHCTL_WEPROTB_GROUP		8
 #define FLASHCTL_WEPROTB_BITS		32
 
+#if defined(CONFIG_SOC_SERIES_MSPM33C)
+#define GSC_BASE		0x40047000
+#define GSC_FLSEMREQ		0x800
+#define GSC_FLSEMCLR		0x804
+#elif defined(CONFIG_SOC_SERIES_AM13E)
+#define GSC_BASE		0x40046000
+#define GSC_FLSEMREQ		0x1800
+#define GSC_FLSEMCLR		0x1804
+#endif
+
 #define MSPM0_FLASH_NODE	DT_INST_CHILD(0, flash_0)
 #define MSPM0_FLASH_BASE	DT_REG_ADDR(MSPM0_FLASH_NODE)
 #define MSPM0_FLASH_SIZE	DT_REG_SIZE(MSPM0_FLASH_NODE)
@@ -96,6 +106,18 @@ struct flash_ti_mspm0_data {
 	struct k_mutex lock;
 	uint32_t num_data_regs;
 };
+
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+static inline void flash_ti_mspm0_sem_take(void)
+{
+	sys_write32(1, GSC_BASE + GSC_FLSEMREQ);
+}
+
+static inline void flash_ti_mspm0_sem_release(void)
+{
+	sys_write32(1, GSC_BASE + GSC_FLSEMCLR);
+}
+#endif
 
 static inline bool flash_ti_mspm0_valid_range(off_t offset, size_t len)
 {
@@ -253,6 +275,9 @@ static int flash_ti_mspm0_erase(const struct device *dev, off_t offset,
 	}
 
 	k_mutex_lock(&data->lock, K_FOREVER);
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+	flash_ti_mspm0_sem_take();
+#endif
 
 	while (len != 0) {
 		ret = flash_ti_mspm0_erase_sector(dev, offset);
@@ -264,6 +289,9 @@ static int flash_ti_mspm0_erase(const struct device *dev, off_t offset,
 		len -= MSPM0_SECTOR_SIZE;
 	}
 
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+	flash_ti_mspm0_sem_release();
+#endif
 	k_mutex_unlock(&data->lock);
 
 	return ret;
@@ -293,6 +321,9 @@ static int flash_ti_mspm0_write(const struct device *dev, off_t offset,
 	}
 
 	k_mutex_lock(&data->lock, K_FOREVER);
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+	flash_ti_mspm0_sem_take();
+#endif
 
 	while (len != 0) {
 		ret = flash_ti_mspm0_program_word(dev, offset, src);
@@ -305,6 +336,9 @@ static int flash_ti_mspm0_write(const struct device *dev, off_t offset,
 		len -= MSPM0_WORD_SIZE;
 	}
 
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+	flash_ti_mspm0_sem_release();
+#endif
 	k_mutex_unlock(&data->lock);
 
 	return ret;
@@ -378,6 +412,10 @@ static int flash_ti_mspm0_init(const struct device *dev)
 
 	k_mutex_init(&data->lock);
 
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+	flash_ti_mspm0_sem_take();
+#endif
+
 	/* Use hardware ECC generation and system to bank address translation */
 	ctl = sys_read32(cfg->base + FLASHCTL_CMDCTL);
 	ctl &= ~(FLASHCTL_CMDCTL_ECCGENOVR | FLASHCTL_CMDCTL_ADDRXLATEOVR);
@@ -388,6 +426,10 @@ static int flash_ti_mspm0_init(const struct device *dev)
 	sys_write32(FLASHCTL_INT_DONE, cfg->base + FLASHCTL_ICLR);
 
 	data->num_data_regs = sys_read32(cfg->base + FLASHCTL_GBLINFO2);
+
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+	flash_ti_mspm0_sem_release();
+#endif
 
 	return 0;
 }
