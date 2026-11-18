@@ -67,13 +67,16 @@
 			ngpios = <12>;
 		};
 
-		flash: flash-controller@40028000 {
-			reg = <0x40028000 DT_SIZE_K(8)>;
+		flash: flash-controller@40042000 {
+			compatible = "ti,mspm0-flash-controller";
+			reg = <0x40042000 DT_SIZE_K(8)>;
 			ranges;
 			interrupts = <2 0>;
 
 			#address-cells = <1>;
 			#size-cells = <1>;
+
+			ti,num-banks = <2>;
 
 			flash0: flash@0 {
 				compatible = "soc-nv-flash";
