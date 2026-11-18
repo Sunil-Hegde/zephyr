@@ -39,7 +39,6 @@
 		#size-cells = <1>;
 		erase-block-size = <1024>;
 		write-block-size = <8>;
-		status = "disabled";
 	};
 
 	flash2: flash@41e00000 {
@@ -50,6 +49,5 @@
 		#size-cells = <1>;
 		erase-block-size = <1024>;
 		write-block-size = <8>;
-		status = "disabled";
 	};
 };
