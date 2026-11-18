@@ -169,3 +169,35 @@
 	mux-states = <&xbar1 0 AM13E2_XBAR_IN_STATE(36, 1)>;
 	mux-state-names = "input";
 };
+
+&flash0 {
+	partitions {
+		ranges;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
+			reg = <0x00000000 DT_SIZE_K(32)>;
+			label = "mcuboot";
+		};
+
+		slot0_partition: partition@8000 {
+			compatible = "zephyr,mapped-partition";
+			reg = <0x00008000 DT_SIZE_K(224)>;
+			label = "image-0";
+		};
+
+		slot1_partition: partition@40000 {
+			compatible = "zephyr,mapped-partition";
+			reg = <0x00040000 DT_SIZE_K(224)>;
+			label = "image-1";
+		};
+
+		storage_partition: partition@78000 {
+			compatible = "zephyr,mapped-partition";
+			reg = <0x00078000 DT_SIZE_K(32)>;
+			label = "storage";
+		};
+	};
+};
