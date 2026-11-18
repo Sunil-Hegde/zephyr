@@ -164,12 +164,19 @@ static void flash_ti_mspm0_unprotect(const struct device *dev, off_t offset)
 		weprota &= ~BIT(sector);
 	}
 
+#if defined(CONFIG_SOC_SERIES_MSPM33C) || defined(CONFIG_SOC_SERIES_AM13E)
+	if (sector >= FLASHCTL_WEPROTA_SECTORS) {
+		weprotb &= ~BIT((sector - FLASHCTL_WEPROTA_SECTORS) /
+				FLASHCTL_WEPROTB_GROUP);
+	}
+#else
 	if (!cfg->has_weprota || (cfg->num_banks > 1)) {
 		weprotb &= ~BIT(sector / FLASHCTL_WEPROTB_GROUP);
 	} else if (sector >= FLASHCTL_WEPROTA_SECTORS) {
 		weprotb &= ~BIT((sector - FLASHCTL_WEPROTA_SECTORS) /
 				FLASHCTL_WEPROTB_GROUP);
 	}
+#endif
 
 	if (cfg->has_weprota) {
 		sys_write32(weprota, cfg->base + FLASHCTL_CMDWEPROTA);
